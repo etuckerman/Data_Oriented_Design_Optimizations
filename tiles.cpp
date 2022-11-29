@@ -329,6 +329,9 @@ void tile_wide_t::render (magpie::renderer& renderer,
   float const scale_y = (float)tex_rect->height;
 
 
+
+
+
   /////////////////////////////////////////////////////////////////////////////////////
   //// DO NOT EDIT CODE BELOW - THIS CODE MUST BE IN YOUR TILE RENDER FUNCTION >>> ////
   /////////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +413,60 @@ bool tile_wide_t::needs_replacing () const
   {
     return false;
   }
+}
+
+
+//TODO: tile editing
+
+tiles_t::tiles_t() 
+{
+    for (int i = 0; i < NUM_TILES; i++)
+    {
+        position[i] = { 0.0, 0.0, 0.0, 0.0 };
+    };
+    for (int i = 0; i < NUM_TILES; i++)
+    {
+        velocity[i] = { 0.0, 0.0, 0.0, 0.0 };
+    };
+    for (int i = 0; i < NUM_TILES; i++)
+    {
+        angle_radians[i] = 0;
+    };
+    for (int i = 0; i < NUM_TILES; i++)
+    {
+        is_eaten[i] = false;
+    };
+    for (int i = 0; i < NUM_TILES; i++)
+    {
+        lifetime[i] = TILE_WIDE_LIFETIIME;
+    };
+}
+
+void update(double elapsed, magpie::spritesheet spritesheet)
+{
+
+}
+
+void render(magpie::renderer& renderer,
+    magpie::_2d::sprite_batch& sprite_batch,
+    magpie::spritesheet spritesheet)
+{
+
+}
+
+void on_collision(object_type_t other_type, void* other_data, magpie::spritesheet spritesheet)
+{
+
+}
+
+object_id_t get_id()
+{
+    return ("tile_normal");
+}
+
+bool needs_replacing()
+{
+    return false;
 }
 
 

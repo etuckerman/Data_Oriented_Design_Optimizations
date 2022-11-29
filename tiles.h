@@ -98,7 +98,36 @@ private:
 
 struct tiles_t
 {
-  std::multimap <object_id_t, tile_t*> data; //remove
+  std::multimap <object_id_t, tile_t*> data;
+
+    tiles_t();
+
+    vector4 position[NUM_TILES];
+    vector4 velocity[NUM_TILES];
+    float angle_radians[NUM_TILES];
+    bool is_eaten[NUM_TILES];
+    double lifetime[NUM_TILES];
+
+    object_id_t tile_id[NUM_TILES];
+
+
+    void update(double elapsed, magpie::spritesheet spritesheet);
+    void render(magpie::renderer& renderer,
+        magpie::_2d::sprite_batch& sprite_batch,
+        magpie::spritesheet spritesheet);
+
+    /// <summary>
+    /// the tile has collided with something
+    /// check what type of object it is and resolve the collision appropriately
+    /// </summary>
+    /// <param name="other_type">the identifier of the other object</param>
+    /// <param name="other_data">pointer to some data, could be another tile, a wall, or anything!</param>
+    /// <param name="spritesheet">spritesheet data, required to get size of other object</param>
+    void on_collision(object_type_t other_type, void* other_data, magpie::spritesheet spritesheet);
+    object_id_t get_id() const;
+    
+    bool needs_replacing() const;
+
 };
 
 
