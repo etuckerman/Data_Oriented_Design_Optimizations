@@ -98,7 +98,7 @@ private:
 
 struct tiles_t
 {
- // std::multimap <object_id_t, tile_t*> data; TODO: Delete this
+ // std::multimap <object_id_t, tile_t*> data; TODO: Delete this 1
 
     tiles_t();
 
