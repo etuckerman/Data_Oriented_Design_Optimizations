@@ -4,6 +4,8 @@
 #include "tiles.h"  // for tile_t
 #include "walls.h"  // for wall_t
 
+#include "timer.h"
+
 
 /// <summary>
 /// check whether 2 AABBs (axis-aligned bounding box) are overlapping
@@ -40,6 +42,10 @@ static bool is_overlapping (float lhs_position_x, float lhs_position_y, float lh
   // Hint: can you spot any wasted computations above?
 }
 
+
+timer MyTimer;
+
+
 void resolve_collisions (magpie::spritesheet spritesheet, magpie::renderer const& renderer,
   player_t& p,
   tiles_t& tiles,
@@ -67,10 +73,12 @@ void resolve_collisions (magpie::spritesheet spritesheet, magpie::renderer const
   // so must be called twice, once for 'lhs' and again for 'rhs'.
   //
   // This same strategy in used in subsequent 'OBJECT A v OBJECT B' collision detection/resolution strategies.
+
   {
     player_t* lhs = &p;
     for (auto rhs_it = tiles.data.begin (); rhs_it != tiles.data.end (); rhs_it++)
     {
+        MyTimer.startTimer();
       tile_t* rhs = (*rhs_it).second;
       if (rhs != nullptr)
       {
@@ -85,6 +93,8 @@ void resolve_collisions (magpie::spritesheet spritesheet, magpie::renderer const
           rhs->on_collision (PLAYER_TYPE, (void*)lhs, spritesheet);
 
           magpie::printf ("Hello :) A tile has hit the player!\n");
+          MyTimer.endTimer();
+          MyTimer.evaluateTimer();
         }
       }
     }
@@ -131,28 +141,46 @@ void resolve_collisions (magpie::spritesheet spritesheet, magpie::renderer const
   /// reduce the amount of work needed to detect collisions.
 
 
-  // TILE v WALL
-  for (auto lhs_it = tiles.data.begin (); lhs_it != tiles.data.end (); lhs_it++)
+  //TILE v WALL (IMPROVEMENT)
   {
-    tile_t* lhs = (*lhs_it).second;
-    if (lhs != nullptr)
-    {
-      // get size of tile via their spritesheet size
-      texture_rect const* lhs_rect = get_tile_texture_rect (spritesheet, lhs->get_id ());
-
-      for (auto rhs_it = walls.data.begin (); rhs_it != walls.data.end (); rhs_it++)
+      tiles_t* lhs = &tiles;
+      for (auto rhs_it = walls.data.begin(); rhs_it != walls.data.end(); rhs_it++)
       {
-        wall_t* rhs = &(*rhs_it);
+          wall_t* rhs = &(*rhs_it);
 
-        if (is_overlapping ((float)lhs->position.x, (float)lhs->position.y, (float)lhs_rect->width, (float)lhs_rect->height,
-          (float)rhs->position.x, (float)rhs->position.y, (float)rhs->size, (float)rhs->size))
-        {
-          lhs->on_collision (WALL_TYPE, (void*)rhs, spritesheet);
-          rhs->on_collision (TILE_TYPE, (void*)lhs, spritesheet);
-        }
+          // get size of tile via their spritesheet size
+          texture_rect const* lhs_rect = get_tile_texture_rect(spritesheet, lhs->get_id());
+
+          if (is_overlapping ((float)lhs->position.x, (float)lhs->position.y, (float)lhs_rect->width, (float)lhs_rect->height,
+              (float)rhs->position.x, (float)rhs->position.y, (float)rhs->size, (float)rhs->size))
+          {
+              lhs->on_collision(WALL_TYPE, (void*)rhs, spritesheet);
+              rhs->on_collision(TILE_TYPE, (void*)lhs, spritesheet);
+          }
       }
-    }
   }
+  // TILE v WALL
+  //for (auto lhs_it = tiles.data.begin (); lhs_it != tiles.data.end (); lhs_it++) //checks lhs of wall and tile
+  //{
+  //  tile_t* lhs = (*lhs_it).second;
+  //  if (lhs != nullptr)
+  //  {
+  //    // get size of tile via their spritesheet size
+  //    texture_rect const* lhs_rect = get_tile_texture_rect (spritesheet, lhs->get_id ());
+
+  //    for (auto rhs_it = walls.data.begin (); rhs_it != walls.data.end (); rhs_it++) 
+  //    {
+  //      wall_t* rhs = &(*rhs_it);
+
+  //      if (is_overlapping ((float)lhs->position.x, (float)lhs->position.y, (float)lhs_rect->width, (float)lhs_rect->height,
+  //        (float)rhs->position.x, (float)rhs->position.y, (float)rhs->size, (float)rhs->size))
+  //      {
+  //        lhs->on_collision (WALL_TYPE, (void*)rhs, spritesheet);
+  //        rhs->on_collision (TILE_TYPE, (void*)lhs, spritesheet);
+  //      }
+  //    }
+  //  }
+  //}
 
 
   // Hint: that is a lot of getting object texture_rects...

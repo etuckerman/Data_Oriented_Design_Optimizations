@@ -15,6 +15,7 @@ struct tile_t
 public:
   tile_t ();
 
+
   virtual void update (double elapsed, magpie::spritesheet spritesheet) = 0;
   virtual void render (magpie::renderer& renderer,
     magpie::_2d::sprite_batch& sprite_batch,
@@ -98,9 +99,14 @@ private:
 
 struct tiles_t
 {
- // std::multimap <object_id_t, tile_t*> data; TODO: Delete this 1
+ //std::multimap <object_id_t, tile_t*> data;
 
     tiles_t();
+
+    std::multimap<object_id_t, tile_t*> data;
+    
+
+  //  vector4 data[NUM_TILES];
 
     vector4 position[NUM_TILES];
     vector4 velocity[NUM_TILES];
@@ -109,6 +115,7 @@ struct tiles_t
     double lifetime[NUM_TILES];
 
     object_id_t tile_id[NUM_TILES];
+
 
 
     void update(double elapsed, magpie::spritesheet spritesheet);
@@ -127,6 +134,39 @@ struct tiles_t
     object_id_t get_id() const;
     
     bool needs_replacing() const;
+    /*
+
+    int index[NUM_TILES];
+
+    bool begin() 
+    {
+        if (index == 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    int size()
+    {
+        return (sizeof(index) / sizeof(*index));
+    }
+
+    bool end()
+    {
+        if (index == )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    */
 
 };
 

@@ -104,10 +104,15 @@
 #include "walls.h"     // for walls_t
 
 #include <cstdlib>     // for srand
+#include "timer.h"
+
+
+
 
 
 ENTRY_POINT
 {
+
   ////////////////////////////////////////////////
   //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
   ////////////////////////////////////////////////
@@ -200,6 +205,7 @@ ENTRY_POINT
       }
 
       // COLLISIONS
+      timer MyTimer;
       {
         vector4 screen_dim = { (double)renderer.get_screen_dimensions ().x, (double)renderer.get_screen_dimensions ().y, 0.0, 0.0 };
         walls_t walls = initialise_walls (screen_dim);

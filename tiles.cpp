@@ -4,6 +4,8 @@
 
 #include <cstdlib> // for std::memcpy, std::malloc, std::free
 
+#include "timer.h"
+
 
 void matrix_multiply (float output[4][4], float const input_a[4][4], float const input_b[4][4])
 {
@@ -419,8 +421,13 @@ bool tile_wide_t::needs_replacing () const
 //TODO: tile editing
 
 tiles_t::tiles_t() 
-{
-    for (int i = 0; i < NUM_TILES; i++)
+{   
+ /*   for (int i = 0; i < NUM_TILES; i++) 
+    {                                   
+        data[i] = data[0];              
+    };                                  */
+
+    /*for (int i = 0; i < NUM_TILES; i++)
     {
         position[i] = { 0.0, 0.0, 0.0, 0.0 };
     };
@@ -439,7 +446,7 @@ tiles_t::tiles_t()
     for (int i = 0; i < NUM_TILES; i++)
     {
         lifetime[i] = TILE_WIDE_LIFETIIME;
-    };
+    };*/
 }
 
 void update(double elapsed, magpie::spritesheet spritesheet)
@@ -495,6 +502,7 @@ void replace_expired_tiles (tiles_t& tiles)
 
 
   // REMOVE OLD TILES
+
   auto it = tiles_copy.data.begin ();
   while (it != tiles_copy.data.end ())
   {
