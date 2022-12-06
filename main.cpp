@@ -113,24 +113,24 @@
 ENTRY_POINT
 {
 
-  ////////////////////////////////////////////////
-  //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
-  ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
+    //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
+    ////////////////////////////////////////////////
 
 
-  srand (0); // initialise rand ()
+    srand(0); // initialise rand ()
 
 
-  // RENDER SETUP
+// RENDER SETUP
 
-  magpie::renderer renderer;
+magpie::renderer renderer;
 #ifdef MAGPIE_PLATFORM_WINDOWS
-  renderer.set_window_title ("SHOT1");
-  renderer.set_window_initial_size (SCREEN_WIDTH, SCREEN_HEIGHT);
+  renderer.set_window_title("SHOT1");
+  renderer.set_window_initial_size(SCREEN_WIDTH, SCREEN_HEIGHT);
 #endif // MAGPIE_PLATFORM_WINDOWS
-  if (!renderer.initialise ())
+  if (!renderer.initialise())
   {
-    MAGPIE_DASSERT (false);
+    MAGPIE_DASSERT(false);
   }
 
 
@@ -142,169 +142,169 @@ ENTRY_POINT
   // SETUP
 
   player_t* player;
-  initialise_player (player);
+  initialise_player(player);
 
   tiles_t tiles;
-  initialise_tiles (tiles);
+  initialise_tiles(tiles);
 
 
   // frame timer
   LARGE_INTEGER clock_freq;
-  QueryPerformanceFrequency (&clock_freq); // ask Windows for the CPU timer frequency
+  QueryPerformanceFrequency(&clock_freq); // ask Windows for the CPU timer frequency
   double const timer_multiplier_secs = (double)clock_freq.QuadPart;
 
   LARGE_INTEGER qpc_start, qpc_end;
-  QueryPerformanceCounter (&qpc_start); // start frame timer
+  QueryPerformanceCounter(&qpc_start); // start frame timer
   // have really small first frame elapsed seconds, rather than an unknown time
 
 
   // GAME LOOP
 
-  while (renderer.process_os_messages ())
+  while (renderer.process_os_messages())
   {
-    QueryPerformanceCounter (&qpc_end); // end frame timer
+    QueryPerformanceCounter(&qpc_end); // end frame timer
     double const elapsed_secs = (double)(qpc_end.QuadPart - qpc_start.QuadPart) / timer_multiplier_secs;
 
-    magpie::printf ("elapsed = %.5fs\n", elapsed_secs);
+    magpie::printf("elapsed = %.5fs\n", elapsed_secs);
 
-    QueryPerformanceCounter (&qpc_start); // start frame timer
+    QueryPerformanceCounter(&qpc_start); // start frame timer
 
 
     magpie::spritesheet spritesheet;
-    if (!spritesheet.initialise (renderer, "data/textures/SHOT1/sprites.xml"))
+    if (!spritesheet.initialise(renderer, "data/textures/SHOT1/sprites.xml"))
     {
-      MAGPIE_DASSERT (false);
+      MAGPIE_DASSERT(false);
     }
     magpie::_2d::sprite_batch sprite_batch;
     // We need enough capacity for this sprite batch to render 1 player sprite, 4 wall sprites and { NUM_TILES } tile sprites
     // Each sprite requires memory for 4 vertices in RAM.
-    if (!sprite_batch.initialise (renderer,
-      spritesheet.get_texture (),
+    if (!sprite_batch.initialise(renderer,
+      spritesheet.get_texture(),
       NUM_TILES * 10u))
     {
-      MAGPIE_DASSERT (false);
+      MAGPIE_DASSERT(false);
     }
 
 
     // UPDATE
     {
-      // PLAYER
-      {
-        player->update (elapsed_secs, renderer, spritesheet);
-      }
-
-      // TILES
-      {
-        for (auto it = tiles.data.begin (); it != tiles.data.end (); it++)
+        // PLAYER
         {
-          if ((*it).second != nullptr)
+          player->update(elapsed_secs, renderer, spritesheet);
+        }
+
+        // TILES
+        {
+          for (auto it = tiles.data.begin(); it != tiles.data.end(); it++)
           {
-            (*it).second->update (elapsed_secs, spritesheet);
+            if ((*it).second != nullptr)
+            {
+              (*it).second->update(elapsed_secs, spritesheet);
+            }
           }
         }
+
+        // COLLISIONS
+        timer MyTimer;
+        {
+          vector4 screen_dim = { (double)renderer.get_screen_dimensions().x, (double)renderer.get_screen_dimensions().y, 0.0, 0.0 };
+          walls_t walls = initialise_walls(screen_dim);
+          resolve_collisions(spritesheet, renderer,
+            *player, tiles, walls);
+          release_walls(walls); Sleep(5);
+        }
+
+        check_player_needs_replacing(player);
+
+        replace_expired_tiles(tiles);
       }
-
-      // COLLISIONS
-      timer MyTimer;
-      {
-        vector4 screen_dim = { (double)renderer.get_screen_dimensions ().x, (double)renderer.get_screen_dimensions ().y, 0.0, 0.0 };
-        walls_t walls = initialise_walls (screen_dim);
-        resolve_collisions (spritesheet, renderer,
-          *player, tiles, walls);
-        release_walls (walls); Sleep (5);
-      }
-
-      check_player_needs_replacing (player);
-
-      replace_expired_tiles (tiles);
-    }
 
 
     // RENDER
     {
-      ////////////////////////////////////////////////
-      //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
-      ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
+        ////////////////////////////////////////////////
 
 
-      if (!renderer.pre_render ({ 0.39f, 0.8f, 0.92f })) // cornflower blue
-      {
-        MAGPIE_DASSERT (false);
-      }
-
-      if (!renderer.sb_begin (sprite_batch))
-      {
-        MAGPIE_DASSERT (false);
-      }
-
-
-      ////////////////////////////////////////////////
-      //// <<< DO NOT EDIT/DELETE/MOVE CODE ABOVE ////
-      ////////////////////////////////////////////////
-
-
-      // PLAYER
-      {
-        player->render (renderer, sprite_batch, spritesheet);
-      }
-
-      // TILES
-      {
-        for (auto it = tiles.data.begin (); it != tiles.data.end (); it++)
+        if (!renderer.pre_render({ 0.39f, 0.8f, 0.92f })) // cornflower blue
         {
-          if ((*it).second != nullptr)
+          MAGPIE_DASSERT(false);
+        }
+
+        if (!renderer.sb_begin(sprite_batch))
+        {
+          MAGPIE_DASSERT(false);
+        }
+
+
+        ////////////////////////////////////////////////
+        //// <<< DO NOT EDIT/DELETE/MOVE CODE ABOVE ////
+        ////////////////////////////////////////////////
+
+
+        // PLAYER
+        {
+          player->render(renderer, sprite_batch, spritesheet);
+        }
+
+        // TILES
+        {
+          for (auto it = tiles.data.begin(); it != tiles.data.end(); it++)
           {
-            (*it).second->render (renderer, sprite_batch, spritesheet);
+            if ((*it).second != nullptr)
+            {
+              (*it).second->render(renderer, sprite_batch, spritesheet);
+            }
           }
         }
-      }
 
-      // WALLS
-      {
-        vector4 screen_dim = { (double)renderer.get_screen_dimensions ().x, (double)renderer.get_screen_dimensions ().y, 0.0, 0.0 };
-        walls_t walls = initialise_walls (screen_dim);
-        for (auto it = walls.data.begin (); it != walls.data.end (); it++)
+        // WALLS
         {
-          it->render (renderer, sprite_batch, spritesheet);
+          vector4 screen_dim = { (double)renderer.get_screen_dimensions().x, (double)renderer.get_screen_dimensions().y, 0.0, 0.0 };
+          walls_t walls = initialise_walls(screen_dim);
+          for (auto it = walls.data.begin(); it != walls.data.end(); it++)
+          {
+            it->render(renderer, sprite_batch, spritesheet);
+          }
+          release_walls(walls); Sleep(10);
         }
-        release_walls (walls); Sleep (10);
+
+
+        ////////////////////////////////////////////////
+        //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
+        ////////////////////////////////////////////////
+
+
+        renderer.sb_end(sprite_batch);
+        renderer.draw(sprite_batch);
+
+        // render to window
+        if (!renderer.post_render())
+        {
+          MAGPIE_DASSERT(false);
+        }
+
+
+        ////////////////////////////////////////////////
+        //// <<< DO NOT EDIT/DELETE/MOVE CODE ABOVE ////
+        ////////////////////////////////////////////////
       }
 
 
-      ////////////////////////////////////////////////
-      //// DO NOT EDIT/DELETE/MOVE CODE BELOW >>> ////
-      ////////////////////////////////////////////////
+      sprite_batch.release(renderer);
+      spritesheet.release(renderer);
+    } // GAME LOOP: END
 
 
-      renderer.sb_end (sprite_batch);
-      renderer.draw (sprite_batch);
+    // RELEASE RESOURCES
 
-      // render to window
-      if (!renderer.post_render ())
-      {
-        MAGPIE_DASSERT (false);
-      }
+    {
+      release_tiles(tiles);
+      release_player(player);
 
-
-      ////////////////////////////////////////////////
-      //// <<< DO NOT EDIT/DELETE/MOVE CODE ABOVE ////
-      ////////////////////////////////////////////////
+      renderer.release();
     }
 
-
-    sprite_batch.release (renderer);
-    spritesheet.release (renderer);
-  } // GAME LOOP: END
-
-
-  // RELEASE RESOURCES
-
-  {
-    release_tiles (tiles);
-    release_player (player);
-
-    renderer.release ();
-  }
-
-  return 0;
+    return 0;
 }
