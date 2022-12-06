@@ -103,9 +103,6 @@ struct tiles_t
 {
     //std::multimap <object_id_t, tile_t*> data;
 
-
-     //  vector4 data[NUM_TILES];
-
     vector4 position[NUM_TILES];
     vector4 velocity[NUM_TILES];
     float angle_radians[NUM_TILES];
@@ -132,7 +129,7 @@ struct tiles_t
 
     object_id_t get_id(int index) const;
 
-    bool needs_replacing() const;
+    bool needs_replacing(int index) const;
     /*
 
     int index[NUM_TILES];

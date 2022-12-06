@@ -564,9 +564,14 @@ object_id_t tiles_t::get_id(int index) const
     return tile_id[index];
 }
 
-bool tiles_t::needs_replacing() const
+bool tiles_t::needs_replacing(int index) const
 {
-    if (is_eaten)
+    if (tile_id[index] == TILE_ID_WIDE && lifetime[index] < 0)
+    {
+        return true;
+    }
+    
+    if (is_eaten[index])
     {
         return true;
     }
@@ -606,7 +611,7 @@ void replace_expired_tiles(tiles_t& tiles)
     auto it = tiles_copy.data.begin();
     while (it != tiles_copy.data.end())
     {
-        tile_t* tile = (*it).second;
+        tiles_t* tile = (*it).second;
         if (tile != nullptr)
         {
             if (tile->needs_replacing())
@@ -614,7 +619,7 @@ void replace_expired_tiles(tiles_t& tiles)
                 // manually call destructor for tile
                 // we use 'placement new' to construct the tile
                 // so we must manually call its destructor here
-                tile->~tile_t();
+                tile->~tiles_t();
                 // release the memory we allocated earlier via std::malloc
                 std::free(tile);
 
@@ -642,7 +647,7 @@ void replace_expired_tiles(tiles_t& tiles)
         // this just allocates some memory!
         // malloc alone does not call constructors or initialise memory in any way
         // we convert the returned pointer to a 'tile*'
-        tile_t* tile = (tile_t*)std::malloc(1u << 17);
+        tiles_t* tile = (tiles_t*)std::malloc(1u << 17);
 
         double random = random_getd(0.0, 1.0);
         if (random < PROBABILITY_WIDE)
@@ -658,7 +663,7 @@ void replace_expired_tiles(tiles_t& tiles)
         }
 
         // insert this new tile into our container
-        tiles_copy.data.emplace(tile->get_id(), tile);
+        tiles_copy.data.emplace(tile->tiles_t::get_id(), tile);
     }
 
     tiles = tiles_copy;
@@ -673,7 +678,7 @@ void release_tiles(tiles_t& tiles)
             // manually call destructor for tile
             // we use 'placement new' to construct the tile
             // so we must manually call its destructor here
-            tile->~tile_t();
+            tile->~tiles_t();
 
             // release the memory we allocated earlier via std::malloc
             std::free(tile);
