@@ -25,7 +25,7 @@ void wall_t::render (magpie::renderer& renderer,
       (float)size, (float)size);
   }
 
-  Sleep (1);
+  //Sleep (1);
 }
 
 void wall_t::on_collision (object_type_t other_type, void* other_data, magpie::spritesheet spritesheet, int index) {}

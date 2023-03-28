@@ -420,12 +420,12 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
 
 //TODO: tile editing
 
-//tiles_t::tiles_t() 
-//{   
- /*   for (int i = 0; i < NUM_TILES; i++) 
+/*tiles_t::tiles_t()
+{   
+    for (int i = 0; i < NUM_TILES; i++) 
     {                                   
         data[i] = data[0];              
-    };                                  */
+    };                                  
 
     /*for (int i = 0; i < NUM_TILES; i++)
     {
@@ -446,8 +446,8 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
     for (int i = 0; i < NUM_TILES; i++)
     {
         lifetime[i] = TILE_WIDE_LIFETIIME;
-    };*/
-//}
+    };
+}*/
 
 void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
 {
