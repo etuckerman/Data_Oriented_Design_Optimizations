@@ -171,7 +171,7 @@ void resolve_collisions (magpie::spritesheet spritesheet, magpie::renderer const
     {
       wall_t* rhs = &(*rhs_it);
 
-      if (is_overlapping ((float)tiles.position[i].x, (float)tiles.position[i].y, (float)lhs_rect->width, (float)lhs_rect->height,
+      if (is_overlapping ((float)tiles.pos_x[i], (float)tiles.pos_y[i], (float)lhs_rect->width, (float)lhs_rect->height,
         (float)rhs->position.x, (float)rhs->position.y, (float)rhs->size, (float)rhs->size))
       {
         tiles.on_collision (WALL_TYPE, (void*)rhs, spritesheet, i);

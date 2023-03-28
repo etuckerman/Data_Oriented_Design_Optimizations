@@ -58,14 +58,14 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
 
     // the left and right walls are pefectly aligned with the y-axis
     // therefore, the tile's velocity response is to have its x velocity 'reflected' perfectly
-    tiles.velocity[tiles_index].x = -tiles.velocity[tiles_index].x;
+    tiles.vel_x[tiles_index] = -tiles.vel_x[tiles_index];
   }
   else
   {
     // tile has hit the top or bottom wall on screen
 
     // reflect y velocity
-    tiles.velocity[tiles_index].y = -tiles.velocity[tiles_index].y;
+    tiles.vel_y[tiles_index] = -tiles.vel_y[tiles_index];
   }
 
   // get the tiles spritesheet rect (position, width & height)
@@ -78,24 +78,24 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
     // tile has hit the left wall, lets move it out
 
     // move tile to the rightmost edge of the left wall
-      tiles.position[tiles_index].x = wall->position.x + wall->size / 2.0;
+      tiles.pos_x[tiles_index] = wall->position.x + wall->size / 2.0;
     // + half the width of the tile itself (remember the tile's origin is at its centre)
-    tiles.position[tiles_index].x += (double)tex_rect->width / 2.0;
+    tiles.pos_x[tiles_index] += (double)tex_rect->width / 2.0;
   }
   else if (wall->get_id () == WALL_ID_RIGHT)
   {
-    tiles.position[tiles_index].x = wall->position.x - wall->size / 2.0;
-    tiles.position[tiles_index].x -= (double)tex_rect->width / 2.0;
+    tiles.pos_x[tiles_index] = wall->position.x - wall->size / 2.0;
+    tiles.pos_x[tiles_index] -= (double)tex_rect->width / 2.0;
   }
   else if (wall->get_id () == WALL_ID_TOP)
   {
-    tiles.position[tiles_index].y = wall->position.y - wall->size / 2.0;
-    tiles.position[tiles_index].y -= (double)tex_rect->height / 2.0;
+    tiles.pos_y[tiles_index] = wall->position.y - wall->size / 2.0;
+    tiles.pos_y[tiles_index] -= (double)tex_rect->height / 2.0;
   }
   else if (wall->get_id () == WALL_ID_BOTTOM)
   {
-    tiles.position[tiles_index].y = wall->position.y + wall->size / 2.0;
-    tiles.position[tiles_index].y += (double)tex_rect->height / 2.0;
+    tiles.pos_y[tiles_index] = wall->position.y + wall->size / 2.0;
+    tiles.pos_y[tiles_index] += (double)tex_rect->height / 2.0;
   }
 
   // By adjusting the tile's position we have stopped the tile and wall from overlapping.
@@ -451,15 +451,33 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
 
 void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
 {
-    for (size_t i = 0; i < NUM_TILES; i++)
+    __m128* pos_x_vector = (__m128*)pos_x;
+    __m128* pos_y_vector = (__m128*)pos_y;
+    __m128* vel_x_vector = (__m128*)vel_x;
+    __m128* vel_y_vector = (__m128*)vel_y;
+    __m128 speed = _mm_set1_ps(TILE_SPEED_MOVEMENT * elapsed);
+
+    __m128* ang_rads = (__m128*)angle_radians;
+    __m128 angle_speed = _mm_set1_ps((float)TILE_SPEED_ROTATION * elapsed);
+    for (size_t i = 0; i < NUM_TILES/4; i++)
     {
         // update position
-        position[i].x += TILE_SPEED_MOVEMENT * velocity[i].x * elapsed;                   //simd
-        position[i].y += TILE_SPEED_MOVEMENT * velocity[i].y * elapsed;                   //simd
+     //  pos_x[i] += vel_x[i] * speed;                   //simd
+     //  pos_y[i] += vel_y[i] * speed;                   //simd
+     //  float temp = vel_x[i] * speed;
+     //  pos_x[i] = pos_x[i] + temp;
+
+        __m128 temp_x = _mm_mul_ps(vel_x_vector[i], speed);
+           pos_x_vector[i] =  _mm_add_ps(pos_x_vector[i], temp_x);
+
+        __m128 temp_y = _mm_mul_ps(vel_y_vector[i], speed);
+        pos_y_vector[i] = _mm_add_ps(pos_y_vector[i], temp_y);
 
         // update angle
-        angle_radians[i] += (float)TILE_SPEED_ROTATION * elapsed;                         //simd
-
+        __m128 temp_angle = _mm_mul_ps(ang_rads[i], angle_speed);                     //simd
+    }
+    for (size_t i = 0; i < NUM_TILES; i++)
+    {
         // limit angle
         float const angle_limit = magpie::maths::two_pi <float>();
         angle_radians[i] = magpie::maths::mod(angle_radians[i], angle_limit);
@@ -475,7 +493,6 @@ void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
         {
             lifetime[i] -= elapsed;
         }
-
     }
 }
 
@@ -490,8 +507,8 @@ void tiles_t::render(magpie::renderer& renderer,
         texture_rect const* tex_rect = get_tile_texture_rect(spritesheet, get_id(i));
         MAGPIE_DASSERT(tex_rect);
 
-        float const position_x = position[i].x;
-        float const position_y = position[i].y;
+        float const position_x = pos_x[i];
+        float const position_y = pos_y[i];
         float const angle = angle_radians[i]; // must be in radians!
         float const scale_x = (float)tex_rect->width;
         float const scale_y = (float)tex_rect->height;
@@ -616,14 +633,14 @@ void create_tile(tiles_t& tiles, int tile_index)
     tiles.is_eaten[tile_index] = false;
     tiles.tile_id[tile_index] = TILE_ID_NORMAL;
     {
-      tiles.position[tile_index].x = random_getd(SCREEN_WIDTH / -2.0, SCREEN_WIDTH / 2.0);
-      tiles.position[tile_index].y = random_getd (SCREEN_HEIGHT / -2.0, SCREEN_HEIGHT / 2.0);
+      tiles.pos_x[tile_index] = random_getd(SCREEN_WIDTH / -2.0, SCREEN_WIDTH / 2.0);
+      tiles.pos_y[tile_index] = random_getd (SCREEN_HEIGHT / -2.0, SCREEN_HEIGHT / 2.0);
     
-      tiles.velocity[tile_index].x = random_getd (-1.0, 1.0);
-      tiles.velocity[tile_index].y = random_getd (-1.0, 1.0);
-      double const magnitude = magpie::maths::sqrt (tiles.velocity[tile_index].x * tiles.velocity[tile_index].x + tiles.velocity[tile_index].y * tiles.velocity[tile_index].y);
-      tiles.velocity[tile_index].x /= magnitude;
-      tiles.velocity[tile_index].y /= magnitude;
+      tiles.vel_x[tile_index] = random_getd (-1.0, 1.0);
+      tiles.vel_y[tile_index] = random_getd (-1.0, 1.0);
+      double const magnitude = magpie::maths::sqrt (tiles.vel_x[tile_index] * tiles.vel_x[tile_index] + tiles.vel_y[tile_index] * tiles.vel_y[tile_index]);
+      tiles.vel_x[tile_index] /= magnitude;
+      tiles.vel_y[tile_index] /= magnitude;
     }
 }
 
@@ -633,14 +650,14 @@ void create_tile_wide(tiles_t& tiles, int tile_index)
     tiles.lifetime[tile_index] = TILE_WIDE_LIFETIIME;
     tiles.tile_id[tile_index] = TILE_ID_WIDE;
     {
-        tiles.position[tile_index].x = random_getd(SCREEN_WIDTH / -2.0, SCREEN_WIDTH / 2.0);
-        tiles.position[tile_index].y = random_getd(SCREEN_HEIGHT / -2.0, SCREEN_HEIGHT / 2.0);
+        tiles.pos_x[tile_index] = random_getd(SCREEN_WIDTH / -2.0, SCREEN_WIDTH / 2.0);
+        tiles.pos_y[tile_index] = random_getd(SCREEN_HEIGHT / -2.0, SCREEN_HEIGHT / 2.0);
 
-        tiles.velocity[tile_index].x = random_getd(-1.0, 1.0);
-        tiles.velocity[tile_index].y = random_getd(-1.0, 1.0);
-        double const magnitude = magpie::maths::sqrt(tiles.velocity[tile_index].x * tiles.velocity[tile_index].x + tiles.velocity[tile_index].y * tiles.velocity[tile_index].y);
-        tiles.velocity[tile_index].x /= magnitude;
-        tiles.velocity[tile_index].y /= magnitude;
+        tiles.vel_x[tile_index] = random_getd(-1.0, 1.0);
+        tiles.vel_y[tile_index] = random_getd(-1.0, 1.0);
+        double const magnitude = magpie::maths::sqrt(tiles.vel_x[tile_index] * tiles.vel_x[tile_index] + tiles.vel_y[tile_index] * tiles.vel_y[tile_index]);
+        tiles.vel_x[tile_index] /= magnitude;
+        tiles.vel_y[tile_index] /= magnitude;
     }
 }
 

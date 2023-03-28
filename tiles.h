@@ -106,14 +106,19 @@ struct tiles_t
 
   //  vector4 data[NUM_TILES];
 
-    vector4 position[NUM_TILES];
-    vector4 velocity[NUM_TILES];
-    float angle_radians[NUM_TILES];
-    bool is_eaten[NUM_TILES];
-    double lifetime[NUM_TILES];
+ /*   alignas(16) vector4 position[NUM_TILES];
+    alignas(16) vector4 velocity[NUM_TILES];*/
+    alignas(16) float pos_x[NUM_TILES];
+    alignas(16) float pos_y[NUM_TILES];
+    alignas(16) float vel_x[NUM_TILES];
+    alignas(16) float vel_y[NUM_TILES];
 
-    object_id_t tile_id[NUM_TILES];
-    bool active[NUM_TILES];
+    alignas(16) float angle_radians[NUM_TILES];
+    alignas(16) bool is_eaten[NUM_TILES];
+    alignas(16) double lifetime[NUM_TILES];
+
+    alignas(16) object_id_t tile_id[NUM_TILES];
+    alignas(16) bool active[NUM_TILES];
 
 
 
