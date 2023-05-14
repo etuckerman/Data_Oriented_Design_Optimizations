@@ -275,7 +275,7 @@ ENTRY_POINT
         {
           it->render (renderer, sprite_batch, spritesheet);
         }
-        release_walls (walls);// Sleep (10);
+        release_walls (walls); //Sleep (10);
       }
 
 

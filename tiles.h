@@ -106,8 +106,9 @@ struct tiles_t
 
   //  vector4 data[NUM_TILES];
 
- /*   alignas(16) vector4 position[NUM_TILES];
-    alignas(16) vector4 velocity[NUM_TILES];*/
+   //alignas(16) vector4 position[NUM_TILES];
+   //alignas(16) vector4 velocity[NUM_TILES];
+
     alignas(16) float pos_x[NUM_TILES];
     alignas(16) float pos_y[NUM_TILES];
     alignas(16) float vel_x[NUM_TILES];
@@ -119,6 +120,8 @@ struct tiles_t
 
     alignas(16) object_id_t tile_id[NUM_TILES];
     alignas(16) bool active[NUM_TILES];
+
+ 
 
 
 

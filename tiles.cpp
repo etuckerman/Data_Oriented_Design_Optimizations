@@ -420,12 +420,12 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
 
 //TODO: tile editing
 
-/*tiles_t::tiles_t()
-{   
-    for (int i = 0; i < NUM_TILES; i++) 
+//tiles_t::tiles_t() 
+//{   
+ /*   for (int i = 0; i < NUM_TILES; i++) 
     {                                   
         data[i] = data[0];              
-    };                                  
+    };                                  */
 
     /*for (int i = 0; i < NUM_TILES; i++)
     {
@@ -446,8 +446,38 @@ static void collision_resolve_tile_wall (magpie::spritesheet spritesheet, tiles_
     for (int i = 0; i < NUM_TILES; i++)
     {
         lifetime[i] = TILE_WIDE_LIFETIIME;
-    };
-}*/
+    };*/
+//}
+
+//void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
+//{
+//    for (size_t i = 0; i < NUM_TILES; i++)
+//    {
+//        // update position
+//        position[i].x += TILE_SPEED_MOVEMENT * velocity[i].x * elapsed;                   //simd
+//        position[i].y += TILE_SPEED_MOVEMENT * velocity[i].y * elapsed;                   //simd
+//
+//        // update angle
+//        angle_radians[i] += (float)TILE_SPEED_ROTATION * elapsed;                         //simd
+//
+//        // limit angle
+//        float const angle_limit = magpie::maths::two_pi <float>();
+//        angle_radians[i] = magpie::maths::mod(angle_radians[i], angle_limit);
+//        // Don't understand what is going on here?
+//        // Ask Andy to talk through it in your tutorial session.
+//        // ...
+//        // Now you know what is going on, how would you implement it in SIMD?
+//        // Hint: there is no 'mod' function in SIMD.
+//
+//
+//        // update lifetime: tile_wide_t only
+//        if (tile_id[i] == TILE_ID_WIDE)
+//        {
+//            lifetime[i] -= elapsed;
+//        }
+//
+//    }
+//}
 
 void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
 {
@@ -455,11 +485,14 @@ void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
     __m128* pos_y_vector = (__m128*)pos_y;
     __m128* vel_x_vector = (__m128*)vel_x;
     __m128* vel_y_vector = (__m128*)vel_y;
+
     __m128 speed = _mm_set1_ps(TILE_SPEED_MOVEMENT * elapsed);
 
-    __m128* ang_rads = (__m128*)angle_radians;
     __m128 angle_speed = _mm_set1_ps((float)TILE_SPEED_ROTATION * elapsed);
-    for (size_t i = 0; i < NUM_TILES/4; i++)
+
+    __m128* ang_rads = (__m128*)angle_radians;
+
+    for (size_t i = 0; i < NUM_TILES / 4; i++)
     {
         // update position
      //  pos_x[i] += vel_x[i] * speed;                   //simd
@@ -468,31 +501,19 @@ void tiles_t::update(double elapsed, magpie::spritesheet spritesheet)
      //  pos_x[i] = pos_x[i] + temp;
 
         __m128 temp_x = _mm_mul_ps(vel_x_vector[i], speed);
-           pos_x_vector[i] =  _mm_add_ps(pos_x_vector[i], temp_x);
+        pos_x_vector[i] = _mm_add_ps(pos_x_vector[i], temp_x);
 
         __m128 temp_y = _mm_mul_ps(vel_y_vector[i], speed);
         pos_y_vector[i] = _mm_add_ps(pos_y_vector[i], temp_y);
 
         // update angle
-        __m128 temp_angle = _mm_mul_ps(ang_rads[i], angle_speed);                     //simd
-    }
-    for (size_t i = 0; i < NUM_TILES; i++)
-    {
-        // limit angle
-        float const angle_limit = magpie::maths::two_pi <float>();
-        angle_radians[i] = magpie::maths::mod(angle_radians[i], angle_limit);
-        // Don't understand what is going on here?
-        // Ask Andy to talk through it in your tutorial session.
-        // ...
-        // Now you know what is going on, how would you implement it in SIMD?
-        // Hint: there is no 'mod' function in SIMD.
-
+        ang_rads[i] = _mm_add_ps(ang_rads[i], angle_speed);                     //simd
 
         // update lifetime: tile_wide_t only
         if (tile_id[i] == TILE_ID_WIDE)
-        {
-            lifetime[i] -= elapsed;
-        }
+         {
+               lifetime[i] -= elapsed;
+         }
     }
 }
 
@@ -636,7 +657,7 @@ void create_tile(tiles_t& tiles, int tile_index)
       tiles.pos_x[tile_index] = random_getd(SCREEN_WIDTH / -2.0, SCREEN_WIDTH / 2.0);
       tiles.pos_y[tile_index] = random_getd (SCREEN_HEIGHT / -2.0, SCREEN_HEIGHT / 2.0);
     
-      tiles.vel_x[tile_index] = random_getd (-1.0, 1.0);
+      tiles.vel_x[tile_index] = random_getd(-1.0, 1.0);
       tiles.vel_y[tile_index] = random_getd (-1.0, 1.0);
       double const magnitude = magpie::maths::sqrt (tiles.vel_x[tile_index] * tiles.vel_x[tile_index] + tiles.vel_y[tile_index] * tiles.vel_y[tile_index]);
       tiles.vel_x[tile_index] /= magnitude;
